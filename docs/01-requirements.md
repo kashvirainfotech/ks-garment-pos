@@ -1,7 +1,9 @@
 # Software requirements specification
 
-**Product:** KS Garment POS | **Version:** 0.1 | **Updated:** 21 October 2026  
-**Status:** Draft for business review. Application implementation has not started.  
+**Product:** KS Garment POS | **Version:** 0.2 | **Updated:** 21 October 2026
+
+**Status:** Draft business requirements; backend/frontend foundation implemented. Authentication and business workflows remain planned.
+
 **Owner:** Kashvira Infotech / product owner. Stable requirement IDs below link to the plan and checklist.
 
 ## 1. Basis, precedence and terminology
@@ -11,9 +13,10 @@ Sources:
 - **S1 — current request:** documentation first; Node.js, React/TypeScript and PostgreSQL; adopt relevant common rules from the supplied manufacturing requirements.
 - **S2 — supplied common rules:** companies, branches, financial years, identity/permissions, inherited parameters, units, optional tracking, parties, prices, dynamic locations, voucher types/numbers and manual SQL.
 - **S3 — [shared garment POS conversation](https://chatgpt.com/share/6ad8514b-d310-83e8-a148-dfe6821df778):** garment variants, commercial reuse, physical and online sales, one initial store, stock integrity, purchasing, returns and reporting.
+- **S4 — current implementation instruction:** create separate backend API and frontend web projects; the frontend is for internal business users only, excluding e-commerce websites and customer portals.
 - **E — engineering proposal:** a recommendation in this document, subject to review rather than an approved business fact.
 
-S1/S2 override conflicting S3 recommendations: use sequence-generated IDs rather than UUID primary keys; use reviewed, manually executed SQL rather than automated schema migration. Manufacturing workflows do not transfer into retail scope automatically.
+S4 defines the current application boundary. S1/S2 override conflicting S3 recommendations: use sequence-generated IDs rather than UUID primary keys; use reviewed, manually executed SQL rather than automated schema migration. Manufacturing workflows do not transfer into retail scope automatically.
 
 | Term | Meaning |
 | --- | --- |
@@ -33,7 +36,7 @@ S1/S2 override conflicting S3 recommendations: use sequence-generated IDs rather
 
 Provide a configurable web POS and back office that lets garment retailers receive merchandise, identify the exact size/color sold, bill quickly, exchange items safely, reconcile payments, and see reliable stock across physical and online channels.
 
-The initial pilot operates one store. The model supports multiple companies and branches from the foundation. Physical and online sales remain required product scope; one online integration is included before commercial release. The choice of online platform is open.
+The initial pilot operates one store. The model supports multiple companies and branches from the foundation. The frontend is an internal staff application only: no public e-commerce website, customer portal or customer login is included. Earlier online-sales requirements describe future external-channel backend integrations and staff-facing order operations; they do not authorize a public website. No online integration is implemented by this scaffold; provider choice remains open.
 
 India, INR, `Asia/Kolkata` display time and GST-oriented configuration are the initial planning assumptions from S3. Tax rates, registration treatment and current statutory obligations must be confirmed for the pilot retailer. No tax-rate or legal-threshold assumptions are frozen by this draft.
 
@@ -43,10 +46,14 @@ India, INR, `Asia/Kolkata` display time and GST-oriented configuration are the i
 | --- | --- | --- |
 | Internal store pilot | Organization/access/configuration, catalog, base-unit stock, purchasing, POS, returns, shifts, core reports, basic dynamic locations, manual SQL controls | Online trading until its own acceptance gate; native mobile apps |
 | Initial commercial web release | Pilot scope hardened; branch transfers, stock counts, one online channel, reconciliation, onboarding, recovery and operating manuals | Advanced marketplace breadth, full accounting, offline synchronization |
-| Growth | Scoped price lists, promotions/loyalty, optional alternate units/batch/serials, aging/replenishment, customer portal, accounting export | Manufacturing and production |
+| Growth | Scoped price lists, promotions/loyalty, optional alternate units/batch/serials, aging/replenishment, accounting export | Manufacturing, production and customer portals |
 | Advanced | Additional marketplaces, forecasting, native mobile, safe offline POS, subscription automation as separately planned | Unapproved integrations and guarantees |
 
-Out of scope: BOMs, production routing, WIP, job-work, manufacturing costing, attendance/payroll and a full double-entry accounting system. Department/designation/employee masters are identity administration, not an HR/payroll commitment.
+Out of scope: public e-commerce/storefront/customer portal, customer-facing login, BOMs, production routing, WIP, job-work, manufacturing costing, attendance/payroll and a full double-entry accounting system. Department/designation/employee masters are identity administration, not an HR/payroll commitment.
+
+| ID | Priority / source | Current frontend boundary |
+| --- | --- | --- |
+| UI-01 | P0 / S4 | `frontend/` is exclusively for authorized internal business staff. It contains no customer-facing catalog, cart, checkout, portal or sign-in. Customers remain parties in staff workflows. `backend/` is the separate Node.js API. |
 
 ## 3. Functional requirements
 
@@ -58,12 +65,12 @@ Out of scope: BOMs, production routing, WIP, job-work, manufacturing costing, at
 | ORG-02 | P0 / S2 | Maintain branch-enabled financial years with start/end dates and open/closed status. Prevent overlapping years for a branch. Document date selects a valid branch year; a closed year rejects posting and backdated edits. |
 | ORG-03 | P0 / S2 | Create the next year for selected branches, initialize new voucher counters and carry continuous stock/party references forward without duplicating opening stock. Other branches may remain in their prior open year. |
 | ORG-04 | P0 / S2 | Department, designation and employee masters support active/inactive status and safe historical references. Deactivation does not erase documents or audit actors. |
-| IAM-01 | P0 / S2 | User creation includes company context, Employee/Customer radio choice and the corresponding employee/customer selector, mobile, email, username and secure password setup. Exactly one matching active identity link is required per company profile. |
+| IAM-01 | P0 / S2,S4 | Staff user creation includes company context, employee identity, mobile, email, username and secure password setup. Retain employee/customer profile distinction in the future API identity model, but do not offer customer login/access in this internal frontend. Exactly one matching active identity link is required per company profile. |
 | IAM-02 | P0 / S2 | Assign branch access and multiple roles per branch. A user may be cashier in branch A and inventory manager in branch B without permissions crossing branches. |
 | IAM-03 | P0 / S2,S3 | Configure screen/action permissions, including view, create, edit draft, post, print, export, authorize, cancel/reverse, refund, price override and stock adjustment. APIs enforce the same controls independently of button visibility. |
 | IAM-04 | P0 / S2,E | Explicit user-level denies override role grants; optional individual allows stay within branch access and approval limits. Proposed resolution: active branch role grants plus allows minus denies, with customer own-record restrictions always applied. |
 | IAM-05 | P0 / S3,E | Support secure login, logout, credential reset, session revocation and privileged-account MFA. Inactive users/removed access lose permissions promptly. Customer principals cannot reach staff administration, stock costing or unrelated customers. |
-| IAM-06 | P0 / S3,E | Separate platform operations from retailer ownership. Tenant provisioning is audited; platform support has no blanket retail-data access. Self-service customer screens are P1, but employee/customer principal enforcement is P0. |
+| IAM-06 | P0 / S3,S4,E | Separate platform operations from retailer ownership. Tenant provisioning is audited; platform support has no blanket retail-data access. Customer principal mappings never grant access to this internal frontend; any future customer application is separately scoped. |
 
 ### Configuration, units and common masters
 
@@ -138,7 +145,7 @@ Out of scope: BOMs, production routing, WIP, job-work, manufacturing costing, at
 | ONL-01 | P0 / S3 | One selected online channel imports/creates orders with scoped external order/event uniqueness, correct variant mappings and explicit payment/order/fulfillment states. A channel retry creates no duplicate order. |
 | ONL-02 | P0 / S3 | Reserve, expire, release and fulfill stock through the same concurrency controls as POS. Late successful payment after reservation expiry triggers reallocation or reconciliation/refund, never unbacked fulfillment. |
 | ONL-03 | P0 / S3 | Pick/pack/dispatch, partial fulfillment, cancellation and return reconcile quantities, payment and reservation state. Integrations use durable retries, failed-event visibility and an operator reconciliation screen. |
-| ONL-04 | P1 / S3 | Add richer shipping/tracking and a customer self-service view; additional marketplaces and a custom storefront are separately prioritized. Third-party channel stock delays need defined safety stock and oversell exception handling. |
+| ONL-04 | P1 / S3,S4 | Add staff-facing shipping/tracking for external-channel orders; additional backend marketplace integrations are separately prioritized. No customer self-service view or storefront belongs to this frontend. Third-party channel stock delays need defined safety stock and oversell exception handling. |
 | CRM-01 | P0 / S3 | Customer contacts, addresses, groups, purchase/return history and marketing consent. Anonymous/walk-in sales are allowed where business/tax policy permits. Avoid mandatory personal data when not needed. |
 | CRM-02 | P1 / S3 | Loyalty earning/redemption/expiry and gift/store-credit issue/redemption use immutable balance transactions; returns reverse eligible rewards and cannot double-credit. |
 | CRM-03 | P1 / S3 | Consent-aware email/WhatsApp invoices/notifications through a selected provider. No provider integration is assumed implemented. |

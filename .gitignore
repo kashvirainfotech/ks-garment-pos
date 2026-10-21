@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.react-router/
+.tools/
+.env
+.env.*
+!.env.example
+coverage/
+playwright-report/
+test-results/
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db

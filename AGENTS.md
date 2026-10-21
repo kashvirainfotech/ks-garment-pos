@@ -4,7 +4,7 @@ These instructions apply to the entire repository. Follow the user's latest expl
 
 ## Workflow and scope
 
-1. Read the requirements, plan, checklist and relevant manual before changing a module. Documentation is the current deliverable; do not begin application implementation as part of the initial documentation task.
+1. Read the requirements, plan, checklist and relevant manual before changing a module. Backend/frontend scaffolding is authorized; keep subsequent implementation aligned with the current task and maintain the documents alongside code.
 2. Preserve garment retail scope. Reuse common organization, security, configuration, unit and voucher rules from the manufacturing reference. Do not add BOMs, production, WIP, job-work, payroll or a general ledger without a scope change.
 3. Distinguish confirmed user constraints, proposed engineering decisions and unresolved business questions. Do not present a proposed policy or an unbuilt screen as approved or delivered.
 4. Progress on reversible work within the authorized task. Ask only when missing information materially affects correctness, scope, compliance or an irreversible action. Never repeatedly request approval already given.
@@ -13,7 +13,7 @@ These instructions apply to the entire repository. Follow the user's latest expl
 
 ## Stack and architecture
 
-1. Use Node.js and TypeScript for the backend, React and TypeScript for the web frontend, and PostgreSQL. The recommended baseline is NestJS, Drizzle ORM and React Router framework SPA mode with Vite; record changes in the decision log.
+1. Use `backend/` for the Node.js/TypeScript NestJS API with Drizzle/PostgreSQL, and `frontend/` for the React/TypeScript internal staff web app using React Router framework SPA mode with Vite. The frontend excludes e-commerce websites, customer portals and customer sign-in. Record architecture changes in the decision log.
 2. Verify current compatible stable versions from official sources at scaffolding and upgrades; use a supported Node.js LTS and supported PostgreSQL release. Pin resolved dependencies and commit the lockfile. Do not use prereleases just to claim the latest version.
 3. Start with a modular monolith. Keep routes/controllers thin, validation in DTOs/pipes, authorization in guards/policies, workflows in services, and database access in repositories. Share transaction handles across repositories participating in one workflow.
 4. Keep authoritative stock, tax, pricing, permission and payment logic on the backend. Frontend calculations are previews.

@@ -1,9 +1,18 @@
 # Technical manual
 
-**Version:** 0.1 | **Updated:** 21 October 2026  
-**State:** Design baseline. Every component and command below is **Planned** unless explicitly marked otherwise. No application, package manifest, SQL objects, API endpoints or deployment currently exist.
+**Version:** 0.2 | **Updated:** 21 October 2026
+
+**State:** Backend/frontend scaffold implemented. Sections explicitly describing the scaffold/setup are current; business architecture, authentication, schema, posting, integrations and operations below remain **Planned**. No database objects or deployment exist.
 
 This manual serves developers, database operators and support/operations. Update each section to **Implemented** with actual version/change references, then **Verified** with test/environment/date evidence. Do not turn proposed paths or commands into claims about the current repository.
+
+## 0. Implemented foundation
+
+`backend/` and `frontend/` are separate npm workspace projects sharing a root lockfile. The backend is the Node API; the frontend uses Node-based tooling and emits static SPA assets for internal business staff. It has no e-commerce site, customer portal or customer login. Customers remain business parties; historical customer identity/online-channel proposals do not expand this frontend boundary.
+
+Delivered: validated API environment, `/api/v1/health`, development OpenAPI JSON, request correlation, safe API errors, body limit, restricted CORS, Helmet, rate limiting, graceful shutdown and lazy Drizzle/pg configuration. The web shell has overview/setup routes, a real health request/retry, responsive layout and safe route errors. No business endpoints, database query, schema check, authentication, role enforcement or retailer data is implemented yet.
+
+Health is **liveness only**. It must not be used to assert database/schema/business readiness. Database objects and schema-version checks will be added separately after the ownership decisions and manually executed scripts are ready.
 
 ## 1. Stack and version policy
 
@@ -17,6 +26,8 @@ This manual serves developers, database operators and support/operations. Update
 | Client data/forms | Typed API client; choose cache/form libraries at scaffolding | Avoid committing to unnecessary dependencies before UI validation |
 | Background work | PostgreSQL outbox/inbox and durable job records initially | Atomic recording of integration work; introduce a broker only when justified |
 | Deployment | Separate API/web artifacts; one origin via proxy preferred | Provider/region/container and database hosting choices remain open |
+
+Selected on 21 October 2026: Node 24.22.0 LTS for local verification; NestJS 12.2.0, Fastify 5.12.7, Drizzle 0.45.4, pg 8.23.1, React 19.3.1, React Router 8.5.0, Vite 8.3.4 and TypeScript 6.0.3. Exact direct dependency pins are in each manifest and transitive resolutions in root `package-lock.json`. TypeScript 7 is excluded because selected Swagger/lint packages do not support it in their peer ranges. Host Node 22.14.0 was not replaced; a checksum-verified official Node 24.22.0 archive under ignored `.tools/` is used for this session. Normal developer setup should install/select Node 24 LTS or supported Node 22.22+.
 
 React Router's [SPA mode](https://reactrouter.com/how-to/spa) supports a browser application served as static assets. Vite is its build tooling rather than the application framework itself. React also documents [Vite-based TypeScript setup](https://react.dev/learn/build-a-react-app-from-scratch).
 
@@ -62,31 +73,34 @@ Proposed module responsibilities:
 
 Use cross-module services for workflows rather than duplicating stock or authorization logic. Reports read committed business data/read models; they do not become another posting engine.
 
-### Planned source structure
+### Implemented source structure and extension points
 
 ```text
-apps/
-  api/src/
-    modules/<feature>/
-      dto/                 # input/output contracts and validation
-      controllers/         # routes and response mapping
-      services/            # orchestration, invariants, transaction boundary
-      repositories/        # scoped typed queries using supplied transaction
-      policies/            # record/action rules where module-specific
-    common/                # guards, filters, interceptors, request context
-    database/              # connection/mappings only; no migration runner
-  web/app/
-    routes/                # React Router route modules
-    features/<feature>/    # screens, forms and workflow components
-    components/            # shared accessible components
-    lib/                   # typed API, session and formatting helpers
-packages/
-  contracts/               # safe shared API types; no server secrets/ORM objects
-database/                  # manually reviewed SQL policy and future scripts
+backend/
+  src/
+    modules/health/         # controller, service, module
+    common/                # safe API exception filter
+    config/                # environment validation
+    database/              # lazy Drizzle/pg provider; no schema/migrations
+    app.module.ts
+    create-app.ts          # shared server factory for startup and HTTP tests
+    main.ts
+  test/                    # Node test runner; real Fastify injection
+frontend/
+  app/
+    routes/                # overview and workspace setup
+    components/            # live API status
+    lib/                   # validated API client and tests
+    root.tsx               # internal staff shell and error boundary
+    styles.css
+  react-router.config.ts   # ssr: false
+  vite.config.ts           # development API proxy
+tests/e2e/                 # browser navigation, API failure/retry and mobile checks
+database/                  # SQL policy only; scripts pending
 docs/                      # maintained documents and decisions
 ```
 
-Only `database/` documentation and `docs/` currently exist. Framework-generated conventions may refine this structure at implementation; record the actual structure afterwards.
+Future business modules add DTOs, scoped repositories and policies as needed. Separate shared API contracts can be introduced when business features justify them; no shared package is fabricated in this scaffold.
 
 ### Request lifecycle
 
@@ -132,7 +146,7 @@ Bootstrap procedure: the operator-reviewed reference-data script creates an audi
 
 Proposed model: tenant-wide `app_user` principal for login, plus `user_company_profile` holding company, user type and exactly one employee/customer identity. Employee details extend an employee-classified party. Branch membership links a user/company profile to one or more roles in each branch. A single person can access multiple companies without duplicating their credentials; each company link is authorized separately.
 
-Employee/customer radio buttons in user creation establish the selected company profile. A customer profile points to a customer-classified party; staff menus cannot be unlocked simply by changing a client-supplied user type. Policies evaluate the server-side profile and active company.
+The internal frontend creates employee-backed staff profiles. A future customer profile in the API identity model may point to a customer-classified party, but it does not grant access to this frontend. Staff menus cannot be unlocked by changing a client-supplied user type; policies must evaluate the server-side profile and active company.
 
 ## 4. Logical data model
 
@@ -293,7 +307,7 @@ Audit actions include login/security changes, permissions, tax/configuration edi
 
 ## 11. API conventions and example contracts
 
-**Planned examples, not live endpoints.** `/api/v1` is the version prefix. Tenant context is derived from the authenticated principal; company/branch path values are validated against membership, never trusted automatically.
+**Implemented:** `GET /api/v1/health` and optional `GET /api/v1/openapi.json`. The OpenAPI contract lists only the actual health route. All examples in the following table are **planned**, not live business endpoints. `/api/v1` is the version prefix. Future tenant context must be derived from the authenticated principal; company/branch path values must be validated against membership.
 
 | Method and example route | Purpose / key checks |
 | --- | --- |
@@ -343,11 +357,36 @@ The [official GST portal's GSTR-1 guidance](https://tutorial.gst.gov.in/userguid
 
 ## 13. Setup, environments and deployment
 
-**Current runnable setup: none.** Do not run guessed `npm install`, build or database commands against this documentation-only repository. Add verified commands after manifests and tooling exist.
+**Implemented local setup:** use Node 24 LTS (24.22.0 verified) or supported Node 22.22+, then run these commands from the repository root:
 
-Planned setup sequence:
+```powershell
+npm ci
+npm run dev
+```
 
-1. Select/pin compatible versions and tooling; create actual workspace manifests and secret-free environment templates.
+API: `http://127.0.0.1:3000/api/v1/health`; development OpenAPI: `http://127.0.0.1:3000/api/v1/openapi.json`; frontend: `http://127.0.0.1:5173`. Both dev processes bind to loopback. The frontend proxies `/api` to the backend. Root `npm run dev:backend` and `npm run dev:frontend` start them separately.
+
+Optional configuration: copy `backend/.env.example` to `backend/.env`, or `frontend/.env.example` to `frontend/.env`. Backend defaults include port 3000, loopback host, allowed frontend origin `http://localhost:5173`, and docs enabled outside production. If calling the API directly from `http://127.0.0.1:5173`, set `FRONTEND_ORIGIN` to that exact origin; normal same-origin proxy requests do not require browser CORS access. `API_DOCS_ENABLED=false` removes the OpenAPI route. Frontend `API_PROXY_TARGET` changes its server-only proxy target. No secrets are included in templates.
+
+`DATABASE_URL` is optional for the scaffold; the API creates no connection/query at startup. No schema sync, migration runner, seeds or application tables exist. Database-dependent workflows remain unimplemented. Test setup ignores local environment files and does not use a database.
+
+```powershell
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+# Or the combined quality check:
+npm run check
+# Install browser once, then test the real dev servers:
+npx playwright install chromium
+npm run test:e2e
+```
+
+Backend output is `backend/dist/`; start it with `npm run start --workspace backend`. Web output is `frontend/build/client/`; `npm run preview --workspace frontend` previews it on port 4173. Production static hosting needs route fallback and an `/api` proxy that never falls back to HTML. No production hosting/authentication deployment is provided in this scaffold.
+
+Remaining setup sequence for business readiness:
+
+1. Review selected versions/tooling and maintain manifests, lockfile and secret-free templates.
 2. Prepare reviewed SQL and have the operator provision the explicitly authorized environment manually.
 3. Configure runtime database role, secret references, API/web origin, session signing/refresh settings, timezone/currency defaults and provider sandbox credentials.
 4. Install with the chosen lockfile, run actual lint/type/test/build commands and start API/web using the documented scripts.
@@ -391,3 +430,15 @@ Restore drill: identify recovery point → operator restores to isolated target 
 Use AC-01–16 as the commercial baseline and AC-17/18 for optional units/tracking. Record datasets, runtime/database roles, versions, commands and results. Do not claim database/hardware verification when only static review was possible.
 
 Update this manual when architecture, dependencies, schema/SQL history, endpoints, security, setup, deployment or recovery changes. Each implemented feature must also update the [user manual](05-user-manual.md), [checklist](03-task-checklist.md) and [changelog](CHANGELOG.md) as applicable.
+
+## 16. Scaffold verification record — 21 October 2026
+
+Verified locally on Windows using Node 24.22.0 and npm 11.19.1:
+
+- `npm run check` passed: ESLint, backend/frontend TypeScript checks, 5 backend HTTP/configuration tests, 5 frontend API-client tests and both production builds.
+- `npm run test:e2e` passed: 3 Chromium scenarios covering real API connection/navigation/deep-link reload, API failure/retry recovery, a 390-pixel layout without horizontal overflow, and a clear unknown-route page. No JavaScript page error occurred in the primary navigation flow.
+- Visually inspected the connected internal overview and recorded the sanitized screenshot in the user manual.
+- Separately smoke-tested `frontend/build/client/` through `npm run preview --workspace frontend`: the built SPA hydrated, navigated and reloaded `/workspace` with no JavaScript page errors. This static-preview check did not assert backend availability; real API connectivity is covered by the dev-server browser scenarios.
+- Installation reported no known dependency vulnerabilities at that time. Exact resolutions remain in the root lockfile.
+
+These checks verify the delivered scaffold only. No database, business-authorization, posting, tax, hardware, backup/restore or production-deployment acceptance is claimed. Phase 1's complete acceptance gate is still pending.

@@ -1,9 +1,20 @@
 # User manual
 
-**Product:** KS Garment POS | **Version:** 0.1 | **Updated:** 21 October 2026  
-**Status:** Planned operating procedures. The application has not been built. All menu names, screens, actions and procedures below are proposed; none is yet marked Implemented or Verified. Actual labels, screenshots, shortcuts and supported devices will be added during development.
+**Product:** KS Garment POS | **Version:** 0.2 | **Updated:** 21 October 2026
+
+**Status:** Internal staff development shell implemented; business operating procedures remain planned. The current frontend has no customer/e-commerce website, portal or customer sign-in. Login, company/branch selection and live store operations have not been delivered.
 
 This manual is for store owners, administrators, cashiers, inventory/purchase staff and accountants. It explains the intended daily workflow without requiring database or development knowledge. An administrator grants access to the relevant company, branch and actions.
+
+## 0. Current development workspace
+
+After a developer starts both projects, open `http://127.0.0.1:5173`. **Overview** shows the workspace foundation and upcoming modules. **Workspace connection** checks the real API; use **Check connection** to retry. **View workspace setup** or the navigation link opens the next planned setup steps. No sample sales/stock figures are presented as live data.
+
+These two pages are implemented. Staff sign-in, permissions, configuration, sales and inventory remain planned; the shell contains no business data and is not an operational store release. Planned labels/procedures below will be updated as their screens are delivered.
+
+Current development overview (sanitized screenshot, 21 October 2026):
+
+![Internal staff workspace overview](images/workspace-overview.png)
 
 ## 1. What will be available, and when
 
@@ -13,7 +24,7 @@ This manual is for store owners, administrators, cashiers, inventory/purchase st
 | Catalog and purchasing | Garment variants/barcodes, locations, opening stock, receipts and supplier documents |
 | Internal store pilot | Billing, tender recording, receipts, returns/exchanges, shifts and core reports |
 | Initial commercial release | Multi-branch transfer/count workflows and one online sales channel, with recovery/support controls |
-| Growth | Alternate units, batches/serials, special price lists, loyalty/vouchers, supplier payments and customer portal |
+| Growth | Alternate units, batches/serials, special price lists, loyalty/vouchers and supplier payments; customer portals are outside this frontend |
 
 Foundation capabilities alone do not mean every planned screen is ready. Optional features remain unavailable until fully delivered and enabled by an authorized administrator.
 
@@ -28,9 +39,10 @@ Foundation capabilities alone do not mean every planned screen is ready. Optiona
 | Purchase staff | Suppliers, purchase orders, GRNs and supplier invoices/returns |
 | Accountant | Registers, tax/payment review, reconciliation and permitted cost reports |
 | Auditor/read-only | View/print/export only the records/actions expressly granted |
-| Customer user | Only their authorized customer information; portal screens are later delivery |
 
 A user may have several roles in a branch and different roles in another branch. Access to one branch does not grant another. Print, export, authorize, refund, price override and cost/profit viewing are separate permissions. A missing button may reflect access restrictions or a feature that has not been enabled.
+
+Customers are business records managed by staff. Historical employee/customer account-mapping requirements are for the identity model and do not grant customers a login to this internal frontend. Account-creation UI must enforce the internal-staff application boundary.
 
 ## 3. Sign in and select your working context
 
@@ -61,9 +73,9 @@ Database installation is a separate operator task; store users do not create or 
 
 ### Create or maintain a user
 
-Choose the company and **Employee** or **Customer**. Select the matching employee/customer from the corresponding dropdown. Enter username, mobile, email and secure password/invitation details as implemented. Grant branch access and one or more roles for each branch.
+Choose the company and matching employee for an internal staff account. Enter username, mobile, email and secure password/invitation details as implemented. Grant branch access and one or more roles for each branch. The older employee/customer identity-model proposal does not enable customer accounts to use this frontend.
 
-The chosen identity must match the company and user type. Customer access must stay limited to the customer's own records. Use explicit action restrictions where required; do not grant broad manager rights just to allow one print or refund action. Deactivate departed users and review active sessions while preserving their history.
+The chosen identity must match the company and staff account type. Use explicit action restrictions where required; do not grant broad manager rights just to allow one print or refund action. Deactivate departed users and review active sessions while preserving their history.
 
 ### Review inherited settings
 

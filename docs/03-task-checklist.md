@@ -1,7 +1,8 @@
 # Task checklist
 
-**Version:** 0.1 | **Updated:** 21 October 2026  
-**Status:** Documentation baseline prepared. All application, database execution and release work is pending.
+**Version:** 0.2 | **Updated:** 21 October 2026
+
+**Status:** Backend/frontend scaffold delivered; business features, database execution and release remain pending. Frontend scope is internal staff only (UI-01).
 
 Checked means the stated artifact/action is complete with evidence. It does not mean approved or production-ready. Owners below are proposed responsibilities, not staffing assignments: PO = product owner; ENG = engineering; DBA = database operator; QA = quality assurance; OPS = operations.
 
@@ -24,8 +25,10 @@ Checked means the stated artifact/action is complete with evidence. It does not 
 
 Requirements: ORG-01–04, IAM-01–06, CFG-01–03, VCH-01–03, DATA-01–04, SEC-01–04.
 
-- [ ] T1.01 ENG: verify compatible current stable stack versions, pin dependencies/lockfile and document exact setup commands.
-- [ ] T1.02 ENG: scaffold API/web/shared contracts, strict TypeScript, lint/type/build checks and meaningful test setup.
+- [x] T1.01 ENG: verify compatible current stable stack versions, pin dependencies/lockfile and document exact setup commands. Evidence: [D-01/D-18](decision-log.md), root/project manifests and `package-lock.json`; Node 24.22.0 verification, 21 October 2026.
+- [x] T1.02 ENG: scaffold separate `backend/` and `frontend/` projects, strict TypeScript, lint/type/build checks and meaningful test setup. Evidence: [backend setup](../backend/README.md), [frontend setup](../frontend/README.md); `npm run check` passed (5 API tests + 5 API-client tests, type checks, lint and both builds), 21 October 2026. Staff authentication and business modules remain pending.
+
+  Browser evidence: `npm run test:e2e` passed all 3 Chromium scenarios (real API/navigation/reload, outage/retry and narrow-layout/404); screenshot and detailed scope limits are in the manuals.
 - [ ] T1.03 ENG/DBA: produce reviewed foundation SQL with named sequences, mandatory columns, keys, indexes, roles, policies and schema metadata.
 - [ ] T1.04 DBA: manually provision an authorized development/test database; record script checksums, execution and verification. Agent must not self-execute.
 - [ ] T1.05 ENG: implement schema compatibility read check with no startup DDL; runtime credentials have no DDL/BYPASSRLS.
@@ -35,6 +38,8 @@ Requirements: ORG-01–04, IAM-01–06, CFG-01–03, VCH-01–03, DATA-01–04, 
 - [ ] T1.09 ENG: dynamic typed settings, effective value/source, allowed-scope fallback and unavailable-feature gates.
 - [ ] T1.10 ENG: voucher type registry, concurrent allocation, series reset guard and branch-year rollover without PK reset.
 - [ ] T1.11 ENG: audit, correlation IDs, secure errors, validation, headers, rate limits and health diagnostics.
+
+  Scaffold progress: health, validated environment, request IDs, safe errors, body limits, CORS, Helmet and rate limiting are implemented. Business audit, authenticated diagnostics and full policy validation remain pending; this parent task is intentionally unchecked.
 - [ ] T1.12 QA: AC-08/09/10/15, principal/permission lifecycle and scope tests; attach test run evidence.
 - [ ] T1.13 ENG/QA: update actual architecture/setup/API/manual sections and phase-exit record.
 
@@ -121,13 +126,13 @@ Requirements: all P0 and NFR-01–08.
 - [ ] T7.04 INV-08/RPT-03: defined aging/slow-moving/sell-through metrics, alerts and reorder suggestions.
 - [ ] T7.05 PUR-04: supplier payments/outstanding, allocations, landed-cost policy and reconciliation.
 - [ ] T7.06 RET-04/CRM-02: controlled no-bill returns, store credit, gift vouchers and loyalty ledgers.
-- [ ] T7.07 CRM-03/ONL-04: consent-aware digital notifications, customer portal and richer shipping.
+- [ ] T7.07 CRM-03/ONL-04: consent-aware digital notifications and staff-facing shipping for external orders; no customer portal in this frontend.
 - [ ] T7.08 RPT-03/04: agreed accounting exports and XLSX formats with access/privacy controls.
 - [ ] T7.09 PO/ENG/QA: prioritize/re-estimate each increment; update requirements, SQL, tests and manuals before enabling it.
 
 ## T8 — Advanced backlog
 
-- [ ] T8.01 Separately scope additional marketplaces and storefront.
+- [ ] T8.01 Separately scope additional backend marketplace integrations; any customer storefront/portal requires its own authorized project.
 - [ ] T8.02 Separately design offline reconciliation, numbering, payment and conflict behavior.
 - [ ] T8.03 Separately scope native mobile apps and hardware/device security.
 - [ ] T8.04 Separately scope demand forecasting and campaign automation.

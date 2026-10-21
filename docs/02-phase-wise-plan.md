@@ -1,11 +1,12 @@
 # Phase-wise delivery plan
 
-**Version:** 0.1 | **Updated:** 21 October 2026 | **Status:** Proposed  
+**Version:** 0.2 | **Updated:** 21 October 2026 | **Status:** Foundation started; remaining phases proposed
+
 References: [requirements](01-requirements.md), [task checklist](03-task-checklist.md), [decisions](decision-log.md).
 
 ## Planning assumptions
 
-Documentation comes first. This change delivers the document baseline only. Implementation phases below are pending and do not authorize database execution or deployment.
+Documentation was prepared first. The user has now authorized separate backend API and internal-user frontend projects. Their scaffold starts phase 1 independently of unresolved business/schema decisions; it does not authorize database execution or deployment. The frontend excludes e-commerce websites and customer portals. Online work below refers only to future API integrations and staff-facing order operations.
 
 Estimates assume two full-stack developers, one QA engineer available through the project, part-time product-owner input, and access to a pilot retailer, test hardware and one online/payment sandbox. The provisional total for phases 0–6 is **13–21 elapsed weeks**, including documentation/review. These are planning ranges, not dates or delivery commitments. Re-estimate after phase 0 and provider selection; delays in business decisions, data quality or external access are additional dependencies.
 
@@ -95,13 +96,13 @@ Release gate:
 
 Requirements: UOM-02, TRK-01/02, PRC-02/03, PUR-04, RET-04, INV-08, CRM-02/03, ONL-04 and RPT-03.
 
-Prioritize effective-dated customer/group/region price lists; advanced campaigns; loyalty/gift/store-credit ledgers; aging/replenishment; supplier payments and accounting exports; customer portal; optional alternate units/batches/serials. Each optional feature requires complete API/stock/report coverage and data-conversion planning before its gate can be enabled. AC-17/18 gate units/tracking.
+Prioritize effective-dated customer/group/region price lists; advanced campaigns; loyalty/gift/store-credit ledgers; aging/replenishment; supplier payments and accounting exports; optional alternate units/batches/serials. A customer portal is outside this frontend's scope. Each optional feature requires complete API/stock/report coverage and data-conversion planning before its gate can be enabled. AC-17/18 gate units/tracking.
 
 Do not promise all growth features in one release. Re-estimate each selected increment and update the checklist and manuals as it is delivered.
 
 ## Phase 8 — Advanced capabilities
 
-Separately scope native mobile apps, offline POS synchronization/conflict policy, additional marketplaces, forecasting, advanced customer campaigns and automated commercial subscriptions. Require measured demand and a design for operational failure cases. Manufacturing remains outside this roadmap.
+Separately scope native mobile apps, offline POS synchronization/conflict policy, additional backend marketplace integrations, forecasting, advanced customer campaigns and automated commercial subscriptions. A future customer website/portal requires a separate project and explicit scope authorization. Require measured demand and a design for operational failure cases. Manufacturing remains outside this roadmap.
 
 ## Change and documentation cadence
 

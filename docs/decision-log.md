@@ -1,6 +1,7 @@
 # Decisions, assumptions and open questions
 
-**Version:** 0.1 | **Updated:** 21 October 2026  
+**Version:** 0.2 | **Updated:** 21 October 2026
+
 **Decision owner:** Product owner with engineering/DBA input. No business review approval has been recorded.
 
 ## Confirmed constraints
@@ -14,16 +15,17 @@
 | C-05 | Multiple companies/branches, branch financial years, employee/customer identity, branch roles/actions and inherited configuration | Current common rules adopted for retail |
 | C-06 | Product primary unit, optional alternate units/batches/serials, dynamic warehouse levels, party master, price lists and branch/year vouchers belong in the product requirements | Current common rules |
 | C-07 | Product is for garment retailers, commercially reusable, physical and online sales, one initial store with multi-branch support | User's tailored prompt inside the shared conversation |
+| C-08 | Separate `backend/` API and `frontend/` web projects. Frontend is internal staff only; no e-commerce website, customer portal or customer login. Earlier online plans mean potential API integrations, not a public frontend. | Latest user instruction, 21 October 2026 |
 
 These constraints do not need repeated confirmation. Open entries below concern implementation details, business policies or prioritization, not permission to replace the confirmed stack or SQL policy.
 
 ## Proposed decisions and unresolved details
 
-All entries start **Proposed** or **Open**. Proposed means a usable design recommendation exists; it does not mean the owner accepted it. Resolve before the stated dependency, and record the selected option, reasoning, owner, date and affected documents. Documentation can proceed while entries are open.
+Entries are **Proposed**, **Open**, **Selected for scaffold**, or **Confirmed** as indicated. A proposal is not business approval; scaffold selections are routine engineering choices within the user's implementation request. Resolve open business/schema decisions before the stated dependency and record option, reasoning, owner/date and affected documents. The scaffold does not require inventing resolutions for later schema or business policies.
 
 | ID / status | Topic and working proposal | Resolve before / proposed owner |
 | --- | --- | --- |
-| D-01 / Proposed | NestJS modular monolith + Drizzle ORM/node-postgres; React Router framework SPA mode + Vite/React/TypeScript. Use compatible stable releases and supported Node LTS/PostgreSQL; pin exact versions at scaffolding. Keep SQL authoritative. | Phase 1 scaffolding / ENG |
+| D-01 / Selected for scaffold | NestJS 12.2.0/Fastify 5.12.7 + Drizzle 0.45.4/pg 8.23.1; React 19.3.1/React Router 8.5.0 SPA + Vite 8.3.4. TypeScript 6.0.3 is the latest compatible compiler for the selected Nest OpenAPI/lint ecosystem; TypeScript 7 is not in their peer ranges. Node 24.22.0 LTS used locally for verification; host Node 22.14.0 remains unchanged. Exact manifests and root lockfile are authoritative. | Selected by ENG within authorized scaffolding, 21 October 2026 |
 | D-02 / Proposed | Retailer `tenant_id` is distinct from company `comp_id`: one retailer may own multiple companies. Tenant-scoped user identity plus company employee/customer profiles. Initially shared schema with scoped keys and row security; deployment packaging remains open. | Foundation schema / PO, ENG |
 | D-03 / Proposed | All tables contain required context/audit columns; branch/year fields are NULL where the record has no such ownership. Tenant/global tables may have NULL company fields. Company/branch/year root IDs serve as their corresponding scope columns. Creation audit is normally required; bootstrap and immutable-table rules are explicit. No fabricated zero IDs. | Any final DDL / PO, DBA |
 | D-04 / Proposed | Moving weighted-average cost per company/variant stock pool, with original-cost sales-return reversal and cost-preserving internal transfers. Receiving invoice cost variances need controlled adjustments. Cross-company transfers are separate buy/sell documents, not direct stock moves. | Inventory/cost schema / PO, accountant, ENG |
@@ -39,6 +41,8 @@ All entries start **Proposed** or **Open**. Proposed means a usable design recom
 | D-14 / Proposed | User overrides use explicit deny precedence; branch grants combine only in active branch. Settings resolve allowed user+branch override → branch → company → tenant default → definition default. No standalone global user override that leaks branches. | Authorization/configuration design / PO, ENG |
 | D-15 / Open | Need credit sales, supplier/customer outstanding subledgers or accounting integration at launch? Proposed initial release is fully settled POS plus invoice registers; supplier payments and accounting export are growth. | Phase 0 scope review / PO, accountant |
 | D-16 / Proposed | Initial UI English, INR, Indian date display, timezone Asia/Kolkata; business dates stored separately, audit timestamps UTC. Confirm additional languages/currencies and multijurisdiction needs. | UI and posting design / PO |
+| D-17 / Confirmed | Frontend serves business internal users only. Customer parties/optional future principal mappings do not imply a customer login or portal. Backend channel integrations remain separately planned; none is created in this scaffold. | User instruction, 21 October 2026 |
+| D-18 / Selected for scaffold | Two independent npm workspace packages, `backend/` and `frontend/`, one root lockfile. Frontend uses Node for tooling and emits static browser assets; the API is the Node server. No database schema or automatic migrations. | ENG, 21 October 2026 |
 
 ## Reference conflict resolution
 
